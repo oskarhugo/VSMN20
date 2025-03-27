@@ -1,5 +1,5 @@
 try:
-    file_path = '/Users/hugo/Documents/GitHub/VSMN20/text.txt'
+    file_path = '/Users/hugo/Documents/GitHub/VSMN20/Worksheet1/text.txt'
     total_sum=0
     with open(file_path, 'r') as file:
         for line in file:
