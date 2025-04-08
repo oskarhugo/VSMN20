@@ -32,17 +32,17 @@ class ModelParams:
             ])
 
             self.ex=np.array([
-                  [0.0, 0.0, 600.0],
+                  [0.0, 600.0, 0.0],
                   [0.0, 600.0, 600.0],
-                  [600.0, 600.0, 1200.0],
+                  [600.0, 1200.0, 600.0],
                   [600.0, 1200.0, 1200.0]
             ])
 
             self.ey=np.array([
                   [0.0, 600.0, 600.0],
-                  [0.0, 600.0, 0.0],
+                  [0.0, 0.0, 600.0],
                   [0.0, 600.0, 600.0],
-                  [0.0, 600.0, 0.0]
+                  [0.0, 0.0, 600.0]
             ])
             # --- Element topology ---
             self.edof=np.array([
@@ -63,8 +63,9 @@ class ModelParams:
                  [3, 0.0],
                  [4, 60.0]
             ]]
-
+            print(self.bcs)
             self.dof=None
+
 
 def save(self,filename):
      """Save input to file."""
@@ -100,7 +101,7 @@ class ModelResult:
 
 class ModelSolver:
     """Class for perfoming the model computations."""
-    def ___init__(self, model_params, model_result):
+    def __init__(self, model_params, model_result):
         self.model_params=model_params
         self.model_result=model_result
 
@@ -153,7 +154,7 @@ class ModelSolver:
             bc_prescr=np.array(bc_prescr)
             bc_value=np.array(bc_value)
 
-            a, r=cfc.flw2solve(K, f, bc_prescr, bc_value)
+            a, r=cfc.solveq(K, f, bc_prescr, bc_value)
 
             # --- Calculate element flows and gradients ---
             n_el=edof.shape[0]
@@ -165,6 +166,13 @@ class ModelSolver:
                  es_el,et_el=cfc.flw2ts(elx, ely, D, eld)
                  eles[:]=es_el[0,:]
                  elet[:]=et_el[0,:]
+            
+            # --- Store results in model_results
+            self.model_result.a=a
+            self.model_result.r=r
+            self.model_result.ed=ed
+            self.model_result.es=es
+            self.model_result.et=et
             
 class ModelReport:
      """Class for presenting input and output parameters in report form."""
@@ -183,20 +191,33 @@ class ModelReport:
           self.clear()
           self.add_text()
           self.add_text("-------------- Model input ----------------------------------")
-          # ...
-          self.add_text("Coordinates")
+          
+          self.add_text("Input parameters")
           self.add_text()
           self.add_text(
-               tab.tabulate(self.params.edof, headers=["x", "y"], tablefmt="psql")
+                tab.tabulate(np.asanyarray([np.hstack((self.model_params.t, self.model_params.k_x))]),
+                headers=["t", "t"], 
+                numalign="right",
+                floatfmt=".0f",
+                tablefmt="psql"
+          )
+          )
+          
+          self.add_text()
+          self.add_text("Coords")
+          self.add_text()
+          self.add_text(
+               tab.tabulate(self.model_params.coords, headers=["x", "y"], tablefmt="psql")
           )
 
+          self.add_text()
+          self.add_text("Dofs")
+          self.add_text()
+          self.add_text(
+             tab.tabulate(self.model_params.dof, headers=["dof"], tablefmt="psql")
+          )
           return self.report
-
-
-
-            
-
-
-
-
-
+ModelParams()
+ModelResult()
+ModelSolver(ModelParams, ModelResult)
+ModelReport()

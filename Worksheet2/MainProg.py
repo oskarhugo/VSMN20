@@ -9,3 +9,5 @@ if __name__ == "__main__":
 
     report=fm.ModelReport(model_params, model_result)
     print(report)
+
+    
